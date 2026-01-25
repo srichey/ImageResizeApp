@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Resizer - Resize for All Social Platforms in Seconds</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header with Logo -->
+        <header>
+            <div class="logo-placeholder">
+                <h1>📐 ImageResize</h1>
+                <p class="tagline">Stop wasting hours resizing images. Do it once, use it everywhere.</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Upload Section (shows first) -->
+            <div id="upload-section" class="section">
+                <div class="upload-box" id="upload-box">
+                    <div class="upload-icon">📤</div>
+                    <h2>Drop your image here</h2>
+                    <p>or click to browse</p>
+                    <input type="file" id="file-input" accept="image/jpeg,image/jpg,image/png,image/webp" hidden>
+                    <button class="btn-primary" onclick="document.getElementById('file-input').click()">
+                        Choose Image
+                    </button>
+                    <p class="file-info">Supports: JPG, PNG, WebP (Max 25MB)</p>
+                </div>
+            </div>
+
+            <!-- Preview & Options Section (shows after upload) -->
+            <div id="preview-section" class="section hidden">
+                <h2>Select Formats</h2>
+                
+                <!-- Image Preview -->
+                <div class="preview-container">
+                    <img id="preview-image" src="" alt="Preview">
+                    <p class="filename" id="filename"></p>
+                </div>
+
+                <!-- Format Selection -->
+                <div class="formats-explanation">
+                    <p>Your image will be cropped for these aspect ratios:</p>
+                </div>
+
+                <div class="formats-grid">
+                    <!-- Landscape - Always included -->
+                    <div class="format-card required">
+                        <div class="format-header">
+                            <h3>🎬 Landscape (16:9)</h3>
+                            <span class="required-badge">Required</span>
+                        </div>
+                        <p class="format-description">YouTube videos, Facebook posts</p>
+                        <div class="format-dimensions">1920 × 1080</div>
+                    </div>
+
+                    <!-- Portrait - Optional -->
+                    <label class="format-card optional">
+                        <input type="checkbox" id="portrait-checkbox" checked>
+                        <div class="format-header">
+                            <h3>📱 Portrait (4:5)</h3>
+                            <span class="optional-badge">Optional</span>
+                        </div>
+                        <p class="format-description">Instagram feed, Facebook posts</p>
+                        <div class="format-dimensions">1080 × 1350</div>
+                    </label>
+
+                    <!-- Stories - Optional -->
+                    <label class="format-card optional">
+                        <input type="checkbox" id="stories-checkbox" checked>
+                        <div class="format-header">
+                            <h3>📲 Stories (9:16)</h3>
+                            <span class="optional-badge">Optional</span>
+                        </div>
+                        <p class="format-description">TikTok, Instagram/Facebook Stories, YouTube Shorts</p>
+                        <div class="format-dimensions">1080 × 1920</div>
+                    </label>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="resetApp()">
+                        ← Start Over
+                    </button>
+                    <button class="btn-primary" id="start-crop-btn" onclick="startCropWorkflow()">
+                        Start Cropping →
+                    </button>
+                </div>
+
+                <!-- Progress/Status -->
+                <div id="status-message" class="status-message hidden"></div>
+            </div>
+
+            <!-- Success Section (shows after download) -->
+            <div id="success-section" class="section hidden">
+                <div class="success-box">
+                    <div class="success-icon">✓</div>
+                    <h2>Done!</h2>
+                    <p>Your images are downloading...</p>
+                    <p class="download-info" id="download-info"></p>
+                    <button class="btn-primary" onclick="resetApp()">
+                        Resize Another Image
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <p>Questions or feedback? Email us at <a href="mailto:scottaiworkshop@gmail.com">scottaiworkshop@gmail.com</a></p>
+        </footer>
+    </div>
+
+    <!-- Crop Modal -->
+    <div id="crop-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="crop-progress">
+                <span id="crop-step-indicator">Step 1 of 3</span>
+            </div>
+            
+            <h2 id="crop-title">Crop for Landscape (16:9)</h2>
+            <p class="modal-description" id="crop-description">Drag the box to choose what to show in YouTube videos and Facebook posts</p>
+            
+            <div class="crop-container">
+                <!-- Rotation Controls -->
+                <div class="crop-controls">
+                    <div class="control-group">
+                        <label>Rotate Image:</label>
+                        <div class="rotation-buttons">
+                            <button type="button" class="btn-control" onclick="rotateImage(-90)" title="Rotate left 90°">
+                                ↶ 90°
+                            </button>
+                            <button type="button" class="btn-control" onclick="rotateImage(90)" title="Rotate right 90°">
+                                ↷ 90°
+                            </button>
+                            <button type="button" class="btn-control" onclick="rotateImage(180)" title="Rotate 180°">
+                                ↻ 180°
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="zoom-slider">Zoom: <span id="zoom-value">100%</span></label>
+                        <input type="range" id="zoom-slider" min="1" max="2" step="0.1" value="1" 
+                               oninput="updateZoom(this.value)" class="zoom-slider">
+                        <p class="control-hint">Use zoom to crop vertically and focus on details</p>
+                    </div>
+                </div>
+                
+                <div id="crop-preview-wrapper">
+                    <img id="crop-preview-image" src="" alt="Crop preview">
+                    <div id="crop-box"></div>
+                </div>
+                
+                <div class="crop-info">
+                    <p><strong>Formats using this crop:</strong></p>
+                    <p id="crop-formats-list">YouTube, Facebook landscape</p>
+                    <p class="tip">💡 Position the box over the most important content</p>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="cancelCropWorkflow()">Cancel</button>
+                <button class="btn-primary" id="crop-next-btn" onclick="confirmCurrentCrop()">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
