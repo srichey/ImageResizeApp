@@ -3,127 +3,431 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Resizer - Resize for All Social Platforms in Seconds</title>
+    <title>One Upload. Perfect Crops for Every Platform | ImageResize</title>
+    <meta name="description" content="Full-time creators waste 3-5 hours every week resizing images. Upload once. Get pixel-perfect crops for YouTube, Instagram, TikTok, and Facebook in under a minute.">
     <link rel="stylesheet" href="styles.css">
+    <!-- JSZip Library for creating ZIP files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <!-- Header with Logo -->
-        <header>
-            <div class="logo-placeholder">
-                <h1>📐 ImageResize</h1>
-                <p class="tagline">Stop wasting hours resizing images. Do it once, use it everywhere.</p>
-            </div>
-        </header>
-
-        <!-- Main Content -->
-        <main>
-            <!-- Upload Section (shows first) -->
-            <div id="upload-section" class="section">
-                <div class="upload-box" id="upload-box">
-                    <div class="upload-icon">📤</div>
-                    <h2>Drop your image here</h2>
-                    <p>or click to browse</p>
-                    <input type="file" id="file-input" accept="image/jpeg,image/jpg,image/png,image/webp" hidden>
-                    <button class="btn-primary" onclick="document.getElementById('file-input').click()">
-                        Choose Image
-                    </button>
-                    <p class="file-info">Supports: JPG, PNG, WebP (Max 25MB)</p>
+    <!-- HOMEPAGE HERO SECTION -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="logo">
+                    <span class="logo-icon">📸</span>
+                    <span class="logo-text">ImageResize</span>
                 </div>
-            </div>
-
-            <!-- Preview & Options Section (shows after upload) -->
-            <div id="preview-section" class="section hidden">
-                <h2>Select Formats</h2>
                 
-                <!-- Image Preview -->
-                <div class="preview-container">
-                    <img id="preview-image" src="" alt="Preview">
-                    <p class="filename" id="filename"></p>
-                </div>
-
-                <!-- Format Selection -->
-                <div class="formats-explanation">
-                    <p>Your image will be cropped for these aspect ratios:</p>
-                </div>
-
-                <div class="formats-grid">
-                    <!-- Landscape - Always included -->
-                    <div class="format-card required">
-                        <div class="format-header">
-                            <h3>🎬 Landscape (16:9)</h3>
-                            <span class="required-badge">Required</span>
-                        </div>
-                        <p class="format-description">YouTube videos, Facebook posts</p>
-                        <div class="format-dimensions">1920 × 1080</div>
+                <h1 class="hero-headline">
+                    One Upload. Perfect Crops for Every Platform.
+                </h1>
+                
+                <p class="hero-subheadline">
+                    Full-time creators waste 3-5 hours every week resizing images.<br>
+                    Upload once. Get pixel-perfect crops for YouTube, Instagram, TikTok, and Facebook in under a minute.
+                </p>
+                
+                <p class="hero-guarantee">
+                    No signup. No watermarks. No hassle.
+                </p>
+                
+                <button class="btn-hero" onclick="scrollToUpload()">
+                    Start Resizing ↓
+                </button>
+                
+                <p class="scroll-hint">
+                    ⬇️ Upload your image below
+                </p>
+                
+                <div class="social-proof-bar">
+                    <p class="social-proof-text">Trusted by 500+ content creators, agencies, and influencers</p>
+                    <div class="platform-logos">
+                        <span class="platform-icon" title="YouTube">▶️</span>
+                        <span class="platform-icon" title="Instagram">📷</span>
+                        <span class="platform-icon" title="TikTok">🎵</span>
+                        <span class="platform-icon" title="Facebook">👍</span>
                     </div>
-
-                    <!-- Portrait - Optional -->
-                    <label class="format-card optional">
-                        <input type="checkbox" id="portrait-checkbox" checked>
-                        <div class="format-header">
-                            <h3>📱 Portrait (4:5)</h3>
-                            <span class="optional-badge">Optional</span>
-                        </div>
-                        <p class="format-description">Instagram feed, Facebook posts</p>
-                        <div class="format-dimensions">1080 × 1350</div>
-                    </label>
-
-                    <!-- Stories - Optional -->
-                    <label class="format-card optional">
-                        <input type="checkbox" id="stories-checkbox" checked>
-                        <div class="format-header">
-                            <h3>📲 Stories (9:16)</h3>
-                            <span class="optional-badge">Optional</span>
-                        </div>
-                        <p class="format-description">TikTok, Instagram/Facebook Stories, YouTube Shorts</p>
-                        <div class="format-dimensions">1080 × 1920</div>
-                    </label>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="button-group">
-                    <button class="btn-secondary" onclick="resetApp()">
-                        ← Start Over
-                    </button>
-                    <button class="btn-primary" id="start-crop-btn" onclick="startCropWorkflow()">
-                        Start Cropping →
-                    </button>
-                </div>
-
-                <!-- Progress/Status -->
-                <div id="status-message" class="status-message hidden"></div>
-            </div>
-
-            <!-- Success Section (shows after download) -->
-            <div id="success-section" class="section hidden">
-                <div class="success-box">
-                    <div class="success-icon">✓</div>
-                    <h2>Done!</h2>
-                    <p>Your images are downloading...</p>
-                    <p class="download-info" id="download-info"></p>
-                    <button class="btn-primary" onclick="resetApp()">
-                        Resize Another Image
-                    </button>
                 </div>
             </div>
-        </main>
+        </div>
+    </section>
 
-        <!-- Footer -->
-        <footer>
-            <p>Questions or feedback? Email us at <a href="mailto:scottaiworkshop@gmail.com">scottaiworkshop@gmail.com</a></p>
-        </footer>
-    </div>
-
-    <!-- Crop Modal -->
-    <div id="crop-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="crop-progress">
-                <span id="crop-step-indicator">Step 1 of 3</span>
+    <!-- HOW IT WORKS SECTION -->
+    <section class="how-it-works-section">
+        <div class="content-container">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">3 steps. Under a minute. Done.</p>
+            
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">📤</div>
+                    <h3>Upload</h3>
+                    <p>Drop your image once</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">✂️</div>
+                    <h3>Crop Once</h3>
+                    <p>Adjust crop for all platforms</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">📁</div>
+                    <h3>Download</h3>
+                    <p>Get perfect files for every platform</p>
+                </div>
             </div>
             
-            <h2 id="crop-title">Crop for Landscape (16:9)</h2>
-            <p class="modal-description" id="crop-description">Drag the box to choose what to show in YouTube videos and Facebook posts</p>
+            <p class="steps-note">No signup required. Process everything in your browser.</p>
+        </div>
+    </section>
+
+    <!-- UPLOAD SECTION -->
+    <section id="upload-section" class="upload-section">
+        <div class="content-container">
+            <h2 class="section-title">📸 Upload Your Image</h2>
+            <p class="upload-privacy">
+                <strong>Your image stays private</strong> - we process everything in your browser.<br>
+                No servers, no data collection, no BS.
+            </p>
+            
+            <div class="upload-box" id="upload-box">
+                <div class="upload-icon">📤</div>
+                <h3>Drop your image here or click to browse</h3>
+                <input type="file" id="file-input" accept="image/jpeg,image/jpg,image/png,image/webp,image/heic" style="display: none;">
+                <button type="button" class="btn-primary" id="choose-image-btn">
+                    Choose Image
+                </button>
+                <p class="file-info">
+                    Supports: JPG, PNG, WebP, HEIC (Max 25MB)
+                </p>
+            </div>
+            
+            <div class="pro-tip">
+                💡 <strong>Pro Tip:</strong> Use your highest quality image for best results across all platforms
+            </div>
+        </div>
+    </section>
+
+    <!-- FORMAT SELECTION SECTION -->
+    <section id="format-selection-section" class="section hidden">
+        <div class="content-container">
+            <h2 class="section-title">Choose Your Platforms</h2>
+            <p class="section-subtitle">Select all platforms where you'll post this image:</p>
+            
+            <!-- Image Preview -->
+            <div class="preview-container">
+                <img id="preview-image" src="" alt="Preview">
+                <p class="filename" id="filename"></p>
+            </div>
+
+            <!-- Format Selection Cards -->
+            <div class="formats-grid">
+                <!-- YouTube & Facebook Landscape -->
+                <div class="format-card required">
+                    <div class="format-header">
+                        <h3>▶️ YouTube & Facebook Landscape</h3>
+                        <span class="required-badge">Required</span>
+                    </div>
+                    <p class="format-ratio">16:9 aspect ratio • 1920×1080px</p>
+                    <div class="format-preview-placeholder">[16:9 preview]</div>
+                </div>
+
+                <!-- Instagram Feed & Facebook Posts -->
+                <label class="format-card optional">
+                    <input type="checkbox" id="portrait-checkbox" checked>
+                    <div class="format-header">
+                        <h3>📷 Instagram Feed & Facebook Posts</h3>
+                        <span class="optional-badge">Optional</span>
+                    </div>
+                    <p class="format-ratio">4:5 aspect ratio • 1080×1350px</p>
+                    <div class="format-preview-placeholder">[4:5 preview]</div>
+                </label>
+
+                <!-- TikTok, Stories, Shorts -->
+                <label class="format-card optional">
+                    <input type="checkbox" id="stories-checkbox" checked>
+                    <div class="format-header">
+                        <h3>📱 TikTok, Instagram Stories, YouTube Shorts</h3>
+                        <span class="optional-badge">Optional</span>
+                    </div>
+                    <p class="format-ratio">9:16 aspect ratio • 1080×1920px</p>
+                    <div class="format-preview-placeholder">[9:16 preview]</div>
+                </label>
+            </div>
+
+            <p class="formats-note">
+                💡 All formats will use your custom crops - you control what shows in each
+            </p>
+
+            <!-- Action Buttons -->
+            <div class="button-group">
+                <button class="btn-secondary" onclick="resetApp()">
+                    ← Go Back
+                </button>
+                <button class="btn-primary" id="start-crop-btn" onclick="startCropWorkflow()">
+                    Continue to Cropping →
+                </button>
+            </div>
+
+            <!-- Status Message -->
+            <div id="status-message" class="status-message hidden"></div>
+        </div>
+    </section>
+
+    <!-- DOWNLOAD SUCCESS SECTION -->
+    <section id="success-section" class="section hidden">
+        <div class="content-container">
+            <div class="success-box">
+                <div class="success-icon">✨</div>
+                <h2>Success! Your Images Are Ready</h2>
+                
+                <div class="files-created">
+                    <p><strong>We've created <span id="image-count">3</span> perfectly cropped images:</strong></p>
+                    <div class="file-list" id="file-list">
+                        <!-- Files will be listed here -->
+                    </div>
+                </div>
+
+                <div class="success-actions">
+                    <button class="btn-primary" onclick="resetApp()">
+                        Process Another Image
+                    </button>
+                </div>
+
+                <!-- Time Saved Calculator -->
+                <div class="time-saved-section">
+                    <h3>⏱️ Time Saved Calculator</h3>
+                    <p style="margin-bottom: 1.5rem; opacity: 0.9;">Based on this single image:</p>
+                    
+                    <div class="time-comparison">
+                        <div class="time-column">
+                            <p class="time-label">Without ImageResize:</p>
+                            <p class="time-value">~15 minutes</p>
+                            <ul class="time-breakdown">
+                                <li>Open Canva/Photoshop: 2 min</li>
+                                <li>Resize for YouTube: 4 min</li>
+                                <li>Resize for Instagram: 4 min</li>
+                                <li>Resize for TikTok: 4 min</li>
+                                <li>Export all formats: 1 min</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="time-column highlight">
+                            <p class="time-label">With ImageResize:</p>
+                            <p class="time-value big">Under 1 minute ⚡</p>
+                        </div>
+                    </div>
+                    
+                    <p class="time-saved-result">
+                        <strong>Per image: ~14 minutes saved</strong>
+                    </p>
+                    
+                    <div class="weekly-projection" style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 1.3rem;">📊 For Full-Time Creators:</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div>
+                                <div style="font-size: 2rem; font-weight: 700;">3.5 hours</div>
+                                <div style="opacity: 0.9;">Saved per week</div>
+                                <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">(15 images/week)</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 2rem; font-weight: 700;">14 hours</div>
+                                <div style="opacity: 0.9;">Saved per month</div>
+                                <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">(60 images/month)</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 2rem; font-weight: 700;">168 hours</div>
+                                <div style="opacity: 0.9;">Saved per year</div>
+                                <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">(Full week of work!)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social Sharing -->
+                <div class="social-sharing">
+                    <h3>📢 Love this tool? Help us spread the word!</h3>
+                    <div class="share-buttons">
+                        <a href="https://twitter.com/intent/tweet?text=Just%20saved%2045%20minutes%20resizing%20images%20with%20ImageResize!%20One%20upload%2C%20perfect%20crops%20for%20all%20platforms.%20100%25%20free%20%F0%9F%8E%89" target="_blank" class="btn-share">
+                            Share on Twitter
+                        </a>
+                        <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://imageresizebetaapp.netlify.app" target="_blank" class="btn-share">
+                            Share on LinkedIn
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WHO IS THIS FOR SECTION -->
+    <section class="who-section">
+        <div class="content-container">
+            <h2 class="section-title">Perfect For:</h2>
+            
+            <div class="audience-grid">
+                <div class="audience-card">
+                    <div class="audience-icon">🎬</div>
+                    <h3>Content Creators</h3>
+                    <p>Full-time creators: Stop spending 3-5 hours every week cropping thumbnails for YouTube, Instagram, and TikTok</p>
+                </div>
+                
+                <div class="audience-card">
+                    <div class="audience-icon">📱</div>
+                    <h3>Social Media Managers</h3>
+                    <p>Managing multiple client accounts? Save 5-10 hours per week by eliminating repetitive resizing</p>
+                </div>
+                
+                <div class="audience-card">
+                    <div class="audience-icon">🏢</div>
+                    <h3>Small Business Owners</h3>
+                    <p>Look professional across all platforms without hiring a designer</p>
+                </div>
+                
+                <div class="audience-card">
+                    <div class="audience-icon">📸</div>
+                    <h3>Influencers</h3>
+                    <p>Maintain consistent branding across YouTube, IG, TikTok, and Facebook</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VS ALTERNATIVES SECTION -->
+    <section class="vs-section">
+        <div class="content-container">
+            <h2 class="section-title">Why ImageResize Instead of...</h2>
+            
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h3>VS Canva:</h3>
+                    <div class="cons">
+                        <p>✗ Slow and bloated interface</p>
+                        <p>✗ Requires account signup</p>
+                        <p>✗ Pushy upgrade prompts</p>
+                    </div>
+                    <div class="pros">
+                        <p>✓ ImageResize: Fast, simple, no BS</p>
+                    </div>
+                </div>
+                
+                <div class="comparison-card">
+                    <h3>VS Adobe Express:</h3>
+                    <div class="cons">
+                        <p>✗ Requires Creative Cloud account</p>
+                        <p>✗ Overwhelming feature bloat</p>
+                        <p>✗ Monthly subscription required</p>
+                    </div>
+                    <div class="pros">
+                        <p>✓ ImageResize: Simple, no account needed</p>
+                    </div>
+                </div>
+                
+                <div class="comparison-card">
+                    <h3>VS Manual Resizing:</h3>
+                    <div class="cons">
+                        <p>✗ Photoshop: 45 min per image</p>
+                        <p>✗ Forget which size for which platform</p>
+                        <p>✗ Inconsistent crops across platforms</p>
+                    </div>
+                    <div class="pros">
+                        <p>✓ ImageResize: Under 1 minute, perfect every time</p>
+                    </div>
+                </div>
+                
+                <div class="comparison-card">
+                    <h3>VS Kapwing:</h3>
+                    <div class="cons">
+                        <p>✗ Watermarks on free tier</p>
+                        <p>✗ Limited monthly exports</p>
+                        <p>✗ Uploads to their servers</p>
+                    </div>
+                    <div class="pros">
+                        <p>✓ ImageResize: No limits, no watermarks, 100% private</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRIVACY & SECURITY SECTION -->
+    <section class="privacy-section">
+        <div class="content-container">
+            <h2 class="section-title">🔒 Your Images Stay Private</h2>
+            
+            <div class="privacy-features">
+                <div class="privacy-feature">
+                    <span class="check">✓</span>
+                    <p><strong>Zero server uploads</strong> - Everything happens in YOUR browser</p>
+                </div>
+                <div class="privacy-feature">
+                    <span class="check">✓</span>
+                    <p><strong>Zero data collection</strong> - We don't track or store anything</p>
+                </div>
+                <div class="privacy-feature">
+                    <span class="check">✓</span>
+                    <p><strong>Zero image storage</strong> - Your photos never touch our servers</p>
+                </div>
+                <div class="privacy-feature">
+                    <span class="check">✓</span>
+                    <p><strong>Zero tracking pixels</strong> - No analytics or cookies</p>
+                </div>
+            </div>
+            
+            <p class="privacy-guarantee">
+                Your photos never touch our servers. We can't see them even if we wanted to.
+            </p>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="content-container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>ImageResize</h3>
+                    <p>One upload, perfect crops for every platform</p>
+                </div>
+                
+                <div class="footer-features">
+                    <h4>Features:</h4>
+                    <ul>
+                        <li>Multi-platform cropping</li>
+                        <li>Browser-based processing</li>
+                        <li>No signup required</li>
+                        <li>Professional quality output</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-platforms">
+                    <h4>Supported Platforms:</h4>
+                    <p>YouTube • Instagram • TikTok • Facebook • Twitter • LinkedIn</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p class="footer-tagline">Made with ❤️ for content creators who are tired of Canva's BS</p>
+                <p class="footer-contact">
+                    Questions or feedback? Email: <a href="/cdn-cgi/l/email-protection#0a7969657e7e6b637d6578617962657a4a6d676b636624696567"><span class="__cf_email__" data-cfemail="7c0f1f1308081d150b130e170f14130c3c1b111d1510521f1311">[email&#160;protected]</span></a>
+                </p>
+                <p class="footer-copyright">© 2026 ImageResize. Your images stay yours.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- CROP MODAL -->
+    <div id="crop-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="crop-header">
+                <span class="crop-step-indicator" id="crop-step-indicator">Step 1 of 3</span>
+                <h2 id="crop-title">Crop for Landscape (16:9)</h2>
+                <p class="crop-instruction" id="crop-description">Drag the box to choose what to show in YouTube videos and Facebook posts</p>
+            </div>
             
             <div class="crop-container">
                 <!-- Rotation Controls -->
@@ -147,7 +451,7 @@
                         <label for="zoom-slider">Zoom: <span id="zoom-value">100%</span></label>
                         <input type="range" id="zoom-slider" min="1" max="2" step="0.1" value="1" 
                                oninput="updateZoom(this.value)" class="zoom-slider">
-                        <p class="control-hint">Use zoom to crop vertically and focus on details</p>
+                        <p class="control-hint">💡 Use zoom to crop vertically and focus on details</p>
                     </div>
                 </div>
                 
@@ -164,13 +468,13 @@
             </div>
             
             <div class="modal-buttons">
-                <button class="btn-secondary" onclick="cancelCropWorkflow()">Cancel</button>
+                <button class="btn-secondary" onclick="cancelCropWorkflow()">← Cancel</button>
                 <button class="btn-primary" id="crop-next-btn" onclick="confirmCurrentCrop()">Next →</button>
             </div>
         </div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <!-- Main JavaScript -->
     <script src="app.js"></script>
 </body>
 </html>

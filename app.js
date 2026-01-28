@@ -1,4 +1,17 @@
 // ============================================
+// IMAGE RESIZER - REDESIGNED VERSION
+// Multi-Platform Image Cropping Tool
+// ============================================
+
+// Scroll to upload section from hero
+function scrollToUpload() {
+    document.getElementById('upload-section').scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+// ============================================
 // IMAGE RESIZER - 3-CROP SEQUENTIAL WORKFLOW
 // WITH ROTATION & ZOOM CONTROLS
 // ============================================
@@ -49,23 +62,51 @@ let zoomState = {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== INITIALIZATION START ===');
+    
     const uploadBox = document.getElementById('upload-box');
     const fileInput = document.getElementById('file-input');
+    const chooseBtn = document.getElementById('choose-image-btn');
+    
+    console.log('Elements:', {
+        uploadBox: uploadBox ? 'FOUND' : 'NOT FOUND',
+        fileInput: fileInput ? 'FOUND' : 'NOT FOUND',
+        chooseBtn: chooseBtn ? 'FOUND' : 'NOT FOUND'
+    });
 
-    // Click to upload
-    uploadBox.addEventListener('click', function() {
+    if (!uploadBox || !fileInput || !chooseBtn) {
+        console.error('CRITICAL: Missing elements!');
+        return;
+    }
+
+    console.log('All elements found, setting up listeners...');
+
+    // Button click - trigger file input
+    chooseBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('=== BUTTON CLICKED ===');
         fileInput.click();
     });
 
-    // Handle file selection
+    // File input change - handle the uploaded file
     fileInput.addEventListener('change', function(e) {
+        console.log('=== FILE INPUT CHANGED ===');
         const file = e.target.files[0];
+        console.log('File selected:', file ? file.name : 'none');
         if (file) {
             handleFileUpload(file);
         }
     });
 
+    console.log('Button listener set');
+    console.log('File input listener set');
+
     // Drag and drop handlers
+    uploadBox.addEventListener('dragenter', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
     uploadBox.addEventListener('dragover', function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -83,17 +124,30 @@ document.addEventListener('DOMContentLoaded', function() {
     uploadBox.addEventListener('drop', function(e) {
         e.preventDefault();
         e.stopPropagation();
+        console.log('=== DROP EVENT ===');
         uploadBox.style.borderColor = '#667eea';
         uploadBox.style.background = '#f8f9ff';
         
         const file = e.dataTransfer.files[0];
+        console.log('Dropped file:', file);
         if (file) {
             handleFileUpload(file);
         }
     });
 
+    // Prevent default drag behavior on the entire document
+    document.addEventListener('dragover', function(e) {
+        e.preventDefault();
+    });
+    
+    document.addEventListener('drop', function(e) {
+        e.preventDefault();
+    });
+
     // Setup format card click handlers
     setupFormatCardHandlers();
+    
+    console.log('=== INITIALIZATION COMPLETE ===');
 });
 
 // ============================================
@@ -126,40 +180,73 @@ function setupFormatCardHandlers() {
 // ============================================
 
 function handleFileUpload(file) {
+    console.log('=== handleFileUpload START ===');
+    console.log('File object:', file);
+    console.log('File name:', file.name);
+    console.log('File type:', file.type);
+    console.log('File size:', file.size);
+    
     // Check file type
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-        alert('Please upload a JPG, PNG, or WebP image.');
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic'];
+    if (!validTypes.includes(file.type.toLowerCase())) {
+        console.error('Invalid file type:', file.type);
+        alert('Please upload a JPG, PNG, WebP, or HEIC image.');
         return;
     }
+
+    console.log('✓ File type valid:', file.type);
 
     // Check file size (25MB limit)
     const maxSize = 25 * 1024 * 1024;
     if (file.size > maxSize) {
+        console.error('File too large:', file.size);
         alert('File is too large. Please upload an image under 25MB.');
         return;
     }
 
+    console.log('✓ File size valid:', file.size);
+
     // Store filename (without extension)
     originalFileName = file.name.split('.')[0];
+    console.log('Stored filename:', originalFileName);
 
     // Read the file and create image
     const reader = new FileReader();
     
+    reader.onerror = function(e) {
+        console.error('FileReader error:', e);
+        alert('Error reading file. Please try again.');
+    };
+    
     reader.onload = function(e) {
+        console.log('✓ FileReader loaded successfully');
+        console.log('Data URL length:', e.target.result.length);
+        
         const img = new Image();
         
+        img.onerror = function(err) {
+            console.error('Image load error:', err);
+            alert('Error loading image. Please try a different file.');
+        };
+        
         img.onload = function() {
+            console.log('✓ Image loaded successfully');
+            console.log('Image dimensions:', img.width, 'x', img.height);
+            
             // Store the original image
             originalImage = img;
+            console.log('✓ Original image stored');
             
             // Show preview screen
+            console.log('Calling showPreview...');
             showPreview(e.target.result, file.name);
         };
         
+        console.log('Setting img.src...');
         img.src = e.target.result;
     };
     
+    console.log('Starting FileReader.readAsDataURL...');
     reader.readAsDataURL(file);
 }
 
@@ -168,16 +255,50 @@ function handleFileUpload(file) {
 // ============================================
 
 function showPreview(imageSrc, fileName) {
-    // Hide upload section
-    document.getElementById('upload-section').classList.add('hidden');
+    console.log('=== showPreview START ===');
+    console.log('imageSrc length:', imageSrc ? imageSrc.length : 'null');
+    console.log('fileName:', fileName);
     
-    // Show preview section
-    const previewSection = document.getElementById('preview-section');
-    previewSection.classList.remove('hidden');
+    // Hide upload section
+    const uploadSection = document.getElementById('upload-section');
+    console.log('Upload section found:', !!uploadSection);
+    if (uploadSection) {
+        uploadSection.classList.add('hidden');
+        console.log('✓ Upload section hidden');
+    }
+    
+    // Show format selection section
+    const previewSection = document.getElementById('format-selection-section');
+    console.log('Preview section found:', !!previewSection);
+    if (previewSection) {
+        previewSection.classList.remove('hidden');
+        console.log('✓ Preview section shown');
+    }
     
     // Set preview image and filename
-    document.getElementById('preview-image').src = imageSrc;
-    document.getElementById('filename').textContent = fileName;
+    const previewImage = document.getElementById('preview-image');
+    const filenameElement = document.getElementById('filename');
+    
+    console.log('Preview image element found:', !!previewImage);
+    console.log('Filename element found:', !!filenameElement);
+    
+    if (previewImage) {
+        previewImage.src = imageSrc;
+        console.log('✓ Preview image src set');
+    }
+    
+    if (filenameElement) {
+        filenameElement.textContent = fileName;
+        console.log('✓ Filename text set');
+    }
+    
+    // Scroll to format selection
+    if (previewSection) {
+        previewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        console.log('✓ Scrolled to preview section');
+    }
+    
+    console.log('=== showPreview END ===');
 }
 
 // ============================================
@@ -316,6 +437,7 @@ function setupCropPreview() {
 function initializeCropBox(targetRatio, zoom) {
     const previewImage = document.getElementById('crop-preview-image');
     const cropBox = document.getElementById('crop-box');
+    const wrapper = document.getElementById('crop-preview-wrapper');
     const currentStep = cropSteps[currentStepIndex];
     const rotation = rotationState[currentStep];
     
@@ -349,9 +471,15 @@ function initializeCropBox(targetRatio, zoom) {
         boxHeight = boxWidth / targetRatio;
     }
     
-    // Center the crop box
-    const left = (displayWidth - boxWidth) / 2;
-    const top = (displayHeight - boxHeight) / 2;
+    // Get the actual image position within the centered wrapper
+    const imageRect = previewImage.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const imageOffsetLeft = imageRect.left - wrapperRect.left;
+    const imageOffsetTop = imageRect.top - wrapperRect.top;
+    
+    // Center the crop box within the image (accounting for image offset in wrapper)
+    const left = imageOffsetLeft + (displayWidth - boxWidth) / 2;
+    const top = imageOffsetTop + (displayHeight - boxHeight) / 2;
     
     // Set crop box dimensions and position
     cropBox.style.width = boxWidth + 'px';
@@ -360,6 +488,7 @@ function initializeCropBox(targetRatio, zoom) {
     cropBox.style.top = top + 'px';
     
     console.log(`Crop box: ${boxWidth.toFixed(0)} x ${boxHeight.toFixed(0)} at (${left.toFixed(0)}, ${top.toFixed(0)})`);
+    console.log(`Image offset in wrapper: (${imageOffsetLeft.toFixed(0)}, ${imageOffsetTop.toFixed(0)})`);
     
     // Setup drag handlers
     setupCropBoxDrag();
@@ -368,6 +497,7 @@ function initializeCropBox(targetRatio, zoom) {
 function setupCropBoxDrag() {
     const cropBox = document.getElementById('crop-box');
     const previewImage = document.getElementById('crop-preview-image');
+    const wrapper = document.getElementById('crop-preview-wrapper');
     
     // Remove old listeners
     cropBox.onmousedown = null;
@@ -399,12 +529,20 @@ function setupCropBoxDrag() {
         let newLeft = cropBoxStartLeft + deltaX;
         let newTop = cropBoxStartTop + deltaY;
         
-        // Constrain to image bounds
-        const maxLeft = previewImage.offsetWidth - cropBox.offsetWidth;
-        const maxTop = previewImage.offsetHeight - cropBox.offsetHeight;
+        // Get the actual image position and size within the wrapper
+        const imageRect = previewImage.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
         
-        newLeft = Math.max(0, Math.min(newLeft, maxLeft));
-        newTop = Math.max(0, Math.min(newTop, maxTop));
+        // Calculate image offset from wrapper
+        const imageOffsetLeft = imageRect.left - wrapperRect.left;
+        const imageOffsetTop = imageRect.top - wrapperRect.top;
+        
+        // Constrain to actual image bounds (accounting for centering)
+        const maxLeft = imageOffsetLeft + previewImage.offsetWidth - cropBox.offsetWidth;
+        const maxTop = imageOffsetTop + previewImage.offsetHeight - cropBox.offsetHeight;
+        
+        newLeft = Math.max(imageOffsetLeft, Math.min(newLeft, maxLeft));
+        newTop = Math.max(imageOffsetTop, Math.min(newTop, maxTop));
         
         cropBox.style.left = newLeft + 'px';
         cropBox.style.top = newTop + 'px';
@@ -478,11 +616,24 @@ function confirmCurrentCrop() {
     // Get crop box position as percentages of display image
     const cropBox = document.getElementById('crop-box');
     const previewImage = document.getElementById('crop-preview-image');
+    const wrapper = document.getElementById('crop-preview-wrapper');
+    
     const displayWidth = previewImage.offsetWidth;
     const displayHeight = previewImage.offsetHeight;
     
-    const left = cropBox.offsetLeft / displayWidth;
-    const top = cropBox.offsetTop / displayHeight;
+    // Get the actual image position within the centered wrapper
+    const imageRect = previewImage.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const imageOffsetLeft = imageRect.left - wrapperRect.left;
+    const imageOffsetTop = imageRect.top - wrapperRect.top;
+    
+    // Calculate crop position relative to the image (not the wrapper)
+    const cropLeftRelativeToImage = cropBox.offsetLeft - imageOffsetLeft;
+    const cropTopRelativeToImage = cropBox.offsetTop - imageOffsetTop;
+    
+    // Convert to percentages of the actual image
+    const left = cropLeftRelativeToImage / displayWidth;
+    const top = cropTopRelativeToImage / displayHeight;
     const width = cropBox.offsetWidth / displayWidth;
     const height = cropBox.offsetHeight / displayHeight;
     
@@ -497,6 +648,9 @@ function confirmCurrentCrop() {
     };
     
     console.log(`Saved ${currentStep} crop:`, cropData[currentStep]);
+    console.log(`Image offset: (${imageOffsetLeft.toFixed(0)}, ${imageOffsetTop.toFixed(0)})`);
+    console.log(`Crop box position: (${cropBox.offsetLeft}, ${cropBox.offsetTop})`);
+    console.log(`Crop relative to image: (${cropLeftRelativeToImage.toFixed(0)}, ${cropTopRelativeToImage.toFixed(0)})`);
     
     // Move to next step or finish
     currentStepIndex++;
@@ -699,16 +853,35 @@ function hideStatus() {
 // ============================================
 
 function showSuccessScreen(imageCount) {
-    // Hide preview section
-    document.getElementById('preview-section').classList.add('hidden');
+    // Hide format selection section
+    document.getElementById('format-selection-section').classList.add('hidden');
     
     // Show success section
     const successSection = document.getElementById('success-section');
     successSection.classList.remove('hidden');
     
-    // Update download info
-    const info = `${imageCount} images • Ready to use`;
-    document.getElementById('download-info').textContent = info;
+    // Update image count
+    document.getElementById('image-count').textContent = imageCount;
+    
+    // Generate file list
+    const fileList = document.getElementById('file-list');
+    fileList.innerHTML = '';
+    
+    for (const cropType of cropSteps) {
+        const config = ASPECT_RATIOS[cropType];
+        const ratioString = cropType === 'landscape' ? '16x9' : 
+                            cropType === 'portrait' ? '4x5' : '9x16';
+        const fileName = `${originalFileName}-${cropType}-${ratioString}-${config.width}x${config.height}.jpg`;
+        const fileSize = '~300KB'; // Approximate
+        
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        fileItem.innerHTML = `✓ ${fileName} &nbsp;&nbsp; ${config.width}×${config.height}px &nbsp;&nbsp; ${fileSize}`;
+        fileList.appendChild(fileItem);
+    }
+    
+    // Scroll to success section
+    successSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ============================================
@@ -717,7 +890,7 @@ function showSuccessScreen(imageCount) {
 
 function resetApp() {
     // Hide all sections except upload
-    document.getElementById('preview-section').classList.add('hidden');
+    document.getElementById('format-selection-section').classList.add('hidden');
     document.getElementById('success-section').classList.add('hidden');
     document.getElementById('upload-section').classList.remove('hidden');
     
@@ -747,8 +920,10 @@ function resetApp() {
     
     // Reset button
     const resizeBtn = document.getElementById('start-crop-btn');
-    resizeBtn.disabled = false;
-    resizeBtn.textContent = 'Start Cropping →';
+    if (resizeBtn) {
+        resizeBtn.disabled = false;
+        resizeBtn.textContent = 'Continue to Cropping →';
+    }
     
     // Hide status
     hideStatus();
@@ -756,6 +931,9 @@ function resetApp() {
     // Re-check checkboxes
     document.getElementById('portrait-checkbox').checked = true;
     document.getElementById('stories-checkbox').checked = true;
+    
+    // Scroll to upload section
+    document.getElementById('upload-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ============================================
