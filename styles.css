@@ -199,6 +199,191 @@ body {
    HOW IT WORKS SECTION
    ============================================ */
 
+/* ============================================
+   VALUE PROPOSITION SECTION
+   ============================================ */
+
+.value-prop-section {
+    background: linear-gradient(to bottom, #f8f9ff 0%, white 100%);
+    padding: var(--spacing-xl) 0;
+}
+
+.platforms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.platform-card {
+    background: white;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    border: 2px solid var(--gray-200);
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.platform-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-purple);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.platform-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.platform-emoji {
+    font-size: 2em;
+}
+
+.platform-card h3 {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--gray-900);
+}
+
+.platform-specs {
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--primary-purple);
+    margin-bottom: var(--spacing-xs);
+}
+
+.platform-use {
+    font-size: 0.95em;
+    color: var(--gray-600);
+    line-height: 1.5;
+}
+
+/* Time Savings Callout */
+.time-savings-callout {
+    background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
+    color: white;
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.savings-icon {
+    font-size: 3.5em;
+    flex-shrink: 0;
+}
+
+.savings-content h3 {
+    font-size: 1.8em;
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+}
+
+.savings-content p {
+    font-size: 1.1em;
+    opacity: 0.95;
+    line-height: 1.6;
+}
+
+.savings-content strong {
+    font-weight: 700;
+    color: #FFD700;
+}
+
+/* Comparison Bar */
+.comparison-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.comparison-item {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    text-align: center;
+    flex: 1;
+    min-width: 200px;
+}
+
+.comparison-item.slow {
+    background: #FEF2F2;
+    border: 2px solid #FCA5A5;
+}
+
+.comparison-item.fast {
+    background: #ECFDF5;
+    border: 2px solid #6EE7B7;
+}
+
+.comparison-label {
+    display: block;
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    color: var(--gray-900);
+}
+
+.comparison-time {
+    display: block;
+    font-size: 1.5em;
+    font-weight: 700;
+}
+
+.comparison-item.slow .comparison-time {
+    color: var(--error-red);
+}
+
+.comparison-item.fast .comparison-time {
+    color: var(--success-green);
+}
+
+.comparison-vs {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: var(--gray-600);
+    padding: 0 var(--spacing-sm);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .platforms-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .time-savings-callout {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .savings-icon {
+        font-size: 3em;
+    }
+    
+    .savings-content h3 {
+        font-size: 1.5em;
+    }
+    
+    .comparison-bar {
+        flex-direction: column;
+    }
+    
+    .comparison-vs {
+        transform: rotate(90deg);
+        margin: var(--spacing-sm) 0;
+    }
+}
+
+/* ============================================
+   HOW IT WORKS SECTION
+   ============================================ */
+
 .how-it-works-section {
     background: white;
     padding: var(--spacing-xl) 0;

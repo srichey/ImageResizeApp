@@ -23,7 +23,10 @@ function scrollToUpload() {
 const ASPECT_RATIOS = {
     landscape: { ratio: 16/9, name: 'Landscape (16:9)', width: 1920, height: 1080 },
     portrait: { ratio: 4/5, name: 'Portrait (4:5)', width: 1080, height: 1350 },
-    stories: { ratio: 9/16, name: 'Stories (9:16)', width: 1080, height: 1920 }
+    stories: { ratio: 9/16, name: 'Stories (9:16)', width: 1080, height: 1920 },
+    twitter: { ratio: 1/1, name: 'Twitter Square (1:1)', width: 1200, height: 1200 },
+    linkedin: { ratio: 1.91/1, name: 'LinkedIn (1.91:1)', width: 1200, height: 628 },
+    pinterest: { ratio: 2/3, name: 'Pinterest (2:3)', width: 1000, height: 1500 }
 };
 
 // ============================================
@@ -35,7 +38,10 @@ let originalFileName = '';
 let cropData = {
     landscape: null,
     portrait: null,
-    stories: null
+    stories: null,
+    twitter: null,
+    linkedin: null,
+    pinterest: null
 };
 let cropSteps = [];
 let currentStepIndex = 0;
@@ -49,12 +55,18 @@ let cropBoxStartTop = 0;
 let rotationState = {
     landscape: 0,
     portrait: 0,
-    stories: 0
+    stories: 0,
+    twitter: 0,
+    linkedin: 0,
+    pinterest: 0
 };
 let zoomState = {
     landscape: 1,
     portrait: 1,
-    stories: 1
+    stories: 1,
+    twitter: 1,
+    linkedin: 1,
+    pinterest: 1
 };
 
 // ============================================
@@ -255,50 +267,18 @@ function handleFileUpload(file) {
 // ============================================
 
 function showPreview(imageSrc, fileName) {
-    console.log('=== showPreview START ===');
-    console.log('imageSrc length:', imageSrc ? imageSrc.length : 'null');
-    console.log('fileName:', fileName);
+    console.log('=== showPreview - Starting crop workflow directly ===');
     
     // Hide upload section
     const uploadSection = document.getElementById('upload-section');
-    console.log('Upload section found:', !!uploadSection);
     if (uploadSection) {
         uploadSection.classList.add('hidden');
-        console.log('✓ Upload section hidden');
     }
     
-    // Show format selection section
-    const previewSection = document.getElementById('format-selection-section');
-    console.log('Preview section found:', !!previewSection);
-    if (previewSection) {
-        previewSection.classList.remove('hidden');
-        console.log('✓ Preview section shown');
-    }
-    
-    // Set preview image and filename
-    const previewImage = document.getElementById('preview-image');
-    const filenameElement = document.getElementById('filename');
-    
-    console.log('Preview image element found:', !!previewImage);
-    console.log('Filename element found:', !!filenameElement);
-    
-    if (previewImage) {
-        previewImage.src = imageSrc;
-        console.log('✓ Preview image src set');
-    }
-    
-    if (filenameElement) {
-        filenameElement.textContent = fileName;
-        console.log('✓ Filename text set');
-    }
-    
-    // Scroll to format selection
-    if (previewSection) {
-        previewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        console.log('✓ Scrolled to preview section');
-    }
-    
-    console.log('=== showPreview END ===');
+    // Start crop workflow immediately (with tiny delay to ensure DOM ready)
+    setTimeout(() => {
+        startCropWorkflow();
+    }, 100);
 }
 
 // ============================================
@@ -306,46 +286,36 @@ function showPreview(imageSrc, fileName) {
 // ============================================
 
 function startCropWorkflow() {
-    // Determine which crops are needed
-    cropSteps = ['landscape']; // Always include landscape
+    // All 6 formats - no checkboxes needed
+    cropSteps = ['landscape', 'portrait', 'stories', 'twitter', 'linkedin', 'pinterest'];
     
-    const portraitCheckbox = document.getElementById('portrait-checkbox');
-    const storiesCheckbox = document.getElementById('stories-checkbox');
-    
-    const portraitChecked = portraitCheckbox ? portraitCheckbox.checked : false;
-    const storiesChecked = storiesCheckbox ? storiesCheckbox.checked : false;
-    
-    console.log('Starting crop workflow...');
-    console.log('Portrait checkbox:', portraitCheckbox, 'Checked:', portraitChecked);
-    console.log('Stories checkbox:', storiesCheckbox, 'Checked:', storiesChecked);
-    
-    if (portraitChecked) {
-        cropSteps.push('portrait');
-        console.log('Added portrait crop');
-    }
-    if (storiesChecked) {
-        cropSteps.push('stories');
-        console.log('Added stories crop');
-    }
-    
-    console.log('Total crop steps:', cropSteps);
-    
+    console.log('Starting crop workflow with all 6 formats');
+        
     // Reset state
     currentStepIndex = 0;
     cropData = {
         landscape: null,
         portrait: null,
-        stories: null
+        stories: null,
+        twitter: null,
+        linkedin: null,
+        pinterest: null
     };
     rotationState = {
         landscape: 0,
         portrait: 0,
-        stories: 0
+        stories: 0,
+        twitter: 0,
+        linkedin: 0,
+        pinterest: 0
     };
     zoomState = {
         landscape: 1,
         portrait: 1,
-        stories: 1
+        stories: 1,
+        twitter: 1,
+        linkedin: 1,
+        pinterest: 1
     };
     
     // Start first crop
@@ -355,6 +325,16 @@ function startCropWorkflow() {
 function cancelCropWorkflow() {
     closeCropModal();
     currentStepIndex = 0;
+    
+    // Show upload section again
+    const uploadSection = document.getElementById('upload-section');
+    if (uploadSection) {
+        uploadSection.classList.remove('hidden');
+    }
+    
+    // Reset states
+    originalImage = null;
+    cropSteps = [];
 }
 
 // ============================================
@@ -362,10 +342,13 @@ function cancelCropWorkflow() {
 // ============================================
 
 function showCropModal() {
+    console.log('=== showCropModal START ===');
     const currentStep = cropSteps[currentStepIndex];
     const config = ASPECT_RATIOS[currentStep];
     
-    console.log('showCropModal called for step:', currentStep, 'Config:', config);
+    console.log('Current step:', currentStep);
+    console.log('Config:', config);
+    console.log('Current step index:', currentStepIndex, 'of', cropSteps.length);
     
     // Update modal text
     document.getElementById('crop-step-indicator').textContent = 
@@ -377,37 +360,58 @@ function showCropModal() {
     const descriptions = {
         landscape: 'Position the crop area for YouTube videos and Facebook posts',
         portrait: 'Position the crop area for Instagram feed and Facebook posts',
-        stories: 'Position the crop area for TikTok, Instagram Stories, and YouTube Shorts'
+        stories: 'Position the crop area for TikTok, Instagram Stories, and YouTube Shorts',
+        twitter: 'Position the crop area for Twitter/X posts',
+        linkedin: 'Position the crop area for LinkedIn posts',
+        pinterest: 'Position the crop area for Pinterest pins'
     };
-    document.getElementById('crop-description').textContent = descriptions[currentStep];
+    document.getElementById('crop-description').textContent = descriptions[currentStep] || 'Position the crop area';
     
     // Update formats list
     const formatsList = {
         landscape: 'YouTube, Facebook landscape',
         portrait: 'Instagram feed, Facebook posts',
-        stories: 'TikTok, Instagram/Facebook Stories, YouTube Shorts'
+        stories: 'TikTok, Instagram/Facebook Stories, YouTube Shorts',
+        twitter: 'Twitter / X',
+        linkedin: 'LinkedIn',
+        pinterest: 'Pinterest'
     };
-    document.getElementById('crop-formats-list').textContent = formatsList[currentStep];
+    document.getElementById('crop-formats-list').textContent = formatsList[currentStep] || currentStep;
     
     // Update next button text
     const nextBtn = document.getElementById('crop-next-btn');
-    if (currentStepIndex === cropSteps.length - 1) {
-        nextBtn.textContent = 'Create Images ✓';
-    } else {
-        nextBtn.textContent = 'Next →';
+    if (nextBtn) {
+        if (currentStepIndex === cropSteps.length - 1) {
+            nextBtn.textContent = 'Create Images ✓';
+        } else {
+            nextBtn.textContent = 'Next →';
+        }
     }
     
     // Set zoom slider value
     const zoomSlider = document.getElementById('zoom-slider');
-    zoomSlider.value = zoomState[currentStep];
-    updateZoomDisplay(zoomState[currentStep]);
+    if (zoomSlider) {
+        zoomSlider.value = zoomState[currentStep];
+        updateZoomDisplay(zoomState[currentStep]);
+    }
     
     // Show the modal
     const modal = document.getElementById('crop-modal');
-    modal.classList.remove('hidden');
+    console.log('Modal element:', modal);
+    console.log('Modal classes before:', modal ? modal.className : 'NOT FOUND');
+    
+    if (modal) {
+        modal.classList.remove('hidden');
+        console.log('Modal classes after:', modal.className);
+        console.log('✓ Modal should now be visible');
+    } else {
+        console.error('ERROR: Modal element not found!');
+    }
     
     // Setup image and crop box with current rotation and zoom
+    console.log('Calling setupCropPreview...');
     setupCropPreview();
+    console.log('=== showCropModal END ===');
 }
 
 function setupCropPreview() {
@@ -674,8 +678,10 @@ function confirmCurrentCrop() {
 
 async function processResize() {
     const resizeBtn = document.getElementById('start-crop-btn');
-    resizeBtn.disabled = true;
-    resizeBtn.textContent = 'Processing...';
+    if (resizeBtn) {
+        resizeBtn.disabled = true;
+        resizeBtn.textContent = 'Processing...';
+    }
     
     showStatus('Creating your images...', 'processing');
     
@@ -703,9 +709,12 @@ async function processResize() {
                 crop
             );
             
-            // Format ratio for filename (e.g., "16x9", "4x5", "9x16")
+            // Format ratio for filename (e.g., "16x9", "4x5", "9x16", "1x1", "1.91x1", "2x3")
             const ratioString = cropType === 'landscape' ? '16x9' : 
-                                cropType === 'portrait' ? '4x5' : '9x16';
+                                cropType === 'portrait' ? '4x5' : 
+                                cropType === 'stories' ? '9x16' :
+                                cropType === 'twitter' ? '1x1' :
+                                cropType === 'linkedin' ? '1.91x1' : '2x3';
             
             // Add to ZIP with ratio in filename
             const fileName = `${originalFileName}-${cropType}-${ratioString}-${config.width}x${config.height}.jpg`;
@@ -731,8 +740,10 @@ async function processResize() {
     } catch (error) {
         console.error('Error processing images:', error);
         alert('Something went wrong: ' + error.message + '\n\nPlease try again.');
-        resizeBtn.disabled = false;
-        resizeBtn.textContent = 'Start Cropping →';
+        if (resizeBtn) {
+            resizeBtn.disabled = false;
+            resizeBtn.textContent = 'Start Cropping →';
+        }
         hideStatus();
     }
 }
@@ -839,13 +850,20 @@ function resizeImageWithCrop(image, targetWidth, targetHeight, crop) {
 
 function showStatus(message, type) {
     const statusDiv = document.getElementById('status-message');
-    statusDiv.textContent = message;
-    statusDiv.className = `status-message ${type}`;
-    statusDiv.classList.remove('hidden');
+    if (statusDiv) {
+        statusDiv.textContent = message;
+        statusDiv.className = `status-message ${type}`;
+        statusDiv.classList.remove('hidden');
+    } else {
+        console.log('Status:', message);
+    }
 }
 
 function hideStatus() {
-    document.getElementById('status-message').classList.add('hidden');
+    const statusDiv = document.getElementById('status-message');
+    if (statusDiv) {
+        statusDiv.classList.add('hidden');
+    }
 }
 
 // ============================================
@@ -853,24 +871,47 @@ function hideStatus() {
 // ============================================
 
 function showSuccessScreen(imageCount) {
-    // Hide format selection section
-    document.getElementById('format-selection-section').classList.add('hidden');
+    console.log('=== SHOWING SUCCESS SCREEN ===');
+    
+    // Hide upload section if it's visible
+    const uploadSection = document.getElementById('upload-section');
+    if (uploadSection) {
+        uploadSection.classList.add('hidden');
+        console.log('✓ Upload section hidden');
+    }
     
     // Show success section
     const successSection = document.getElementById('success-section');
-    successSection.classList.remove('hidden');
+    if (successSection) {
+        successSection.classList.remove('hidden');
+        console.log('✓ Success section shown');
+    } else {
+        console.error('ERROR: Success section not found!');
+        return;
+    }
     
-    // Update image count
-    document.getElementById('image-count').textContent = imageCount;
+    // Update image count (optional element)
+    const imageCountEl = document.getElementById('image-count');
+    if (imageCountEl) {
+        imageCountEl.textContent = imageCount;
+    }
     
     // Generate file list
     const fileList = document.getElementById('file-list');
+    if (!fileList) {
+        console.error('ERROR: File list element not found!');
+        return;
+    }
+    
     fileList.innerHTML = '';
     
     for (const cropType of cropSteps) {
         const config = ASPECT_RATIOS[cropType];
         const ratioString = cropType === 'landscape' ? '16x9' : 
-                            cropType === 'portrait' ? '4x5' : '9x16';
+                            cropType === 'portrait' ? '4x5' : 
+                            cropType === 'stories' ? '9x16' :
+                            cropType === 'twitter' ? '1x1' :
+                            cropType === 'linkedin' ? '1.91x1' : '2x3';
         const fileName = `${originalFileName}-${cropType}-${ratioString}-${config.width}x${config.height}.jpg`;
         const fileSize = '~300KB'; // Approximate
         
@@ -880,8 +921,56 @@ function showSuccessScreen(imageCount) {
         fileList.appendChild(fileItem);
     }
     
-    // Scroll to success section
-    successSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    console.log('=== SUCCESS SCREEN COMPLETE ===');
+}
+
+function restartApp() {
+    console.log('=== RESTART APP ===');
+    
+    // Hide success section
+    const successSection = document.getElementById('success-section');
+    if (successSection) {
+        successSection.classList.add('hidden');
+        console.log('✓ Success section hidden');
+    }
+    
+    // Show upload section
+    const uploadSection = document.getElementById('upload-section');
+    if (uploadSection) {
+        uploadSection.classList.remove('hidden');
+        console.log('✓ Upload section shown');
+    }
+    
+    // Reset all state
+    originalImage = null;
+    cropSteps = [];
+    currentStepIndex = 0;
+    cropData = {};
+    rotationState = {
+        landscape: 0,
+        portrait: 0,
+        stories: 0,
+        twitter: 0,
+        linkedin: 0,
+        pinterest: 0
+    };
+    zoomState = {
+        landscape: 1,
+        portrait: 1,
+        stories: 1,
+        twitter: 1,
+        linkedin: 1,
+        pinterest: 1
+    };
+    
+    // Clear file input
+    const fileInput = document.getElementById('file-input');
+    if (fileInput) {
+        fileInput.value = '';
+        console.log('✓ File input cleared');
+    }
+    
+    console.log('=== RESTART COMPLETE - Ready for new upload ===');
 }
 
 // ============================================
